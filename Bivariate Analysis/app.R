@@ -17,6 +17,9 @@ ui <- fluidPage(
           accept = c("text/csv",
                      "text/comma-separated-values,text/plain",
                      ".csv")
+        ),
+        actionButton("defaultData", 
+                     "Use Default Dataset"
         )
       ),
       column(
@@ -26,10 +29,7 @@ ui <- fluidPage(
           "Show Regression Line?",
           choices = c("Yes", "No"),
           selected = "No"
-        )
-      ),
-      column(
-        3,
+        ),
         radioButtons(
           "showMeans",
           "Show mean of X & Y?",
@@ -44,6 +44,12 @@ ui <- fluidPage(
           "Show Standard Deviation?",
           choices = c("Yes", "No"),
           selected = "No"
+        ),
+        radioButtons(
+          "showPrompt",
+          "Show Prompt?",
+          choices = c("Yes", "No"),
+          selected = "Yes"
         )
       )
     ),
@@ -75,7 +81,7 @@ ui <- fluidPage(
 # Define server logic to read selected file ----
 server <- function(input, output) {
   mdat <- reactiveValues()
-
+  LOADED_DATA <- FALSE
   observe({
     req(input$file1)
     mdat$data <- read.csv(input$file1$datapath,
@@ -85,7 +91,19 @@ server <- function(input, output) {
     mdat$y <- mdat$data[, 2]
     mdat$keep    <- data.frame(x = mdat$x, y = mdat$y)
     mdat$exclude <- data.frame(x = mdat$x, y = mdat$y)
+    LOADED_DATA <- TRUE
   })
+  
+  observeEvent(input$defaultData, {
+    mdat$data <- mtcars
+    mdat$x <- mdat$data[, 1]
+    mdat$y <- mdat$data[, 2]
+    mdat$keep    <- data.frame(x = mdat$x, y = mdat$y)
+    mdat$exclude <- data.frame(x = mdat$x, y = mdat$y)
+    LOADED_DATA <- TRUE
+  })
+  
+  
   
   # Dynamic Interactive prompt
   output$prompt <- renderText({
