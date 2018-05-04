@@ -10,6 +10,17 @@ ui <- fluidPage(
     fluidRow(
       column(
         3,
+        fileInput(
+          "file1",
+          "Choose CSV File",
+          multiple = TRUE,
+          accept = c("text/csv",
+                     "text/comma-separated-values,text/plain",
+                     ".csv")
+        )
+      ),
+      column(
+        3,
         radioButtons(
           "showLine",
           "Show Regression Line?",
@@ -33,17 +44,6 @@ ui <- fluidPage(
           "Show Standard Deviation?",
           choices = c("Yes", "No"),
           selected = "No"
-        )
-      ),
-      column(
-        3,
-        fileInput(
-          "file1",
-          "Choose CSV File",
-          multiple = TRUE,
-          accept = c("text/csv",
-                     "text/comma-separated-values,text/plain",
-                     ".csv")
         )
       )
     ),
@@ -75,6 +75,7 @@ ui <- fluidPage(
 # Define server logic to read selected file ----
 server <- function(input, output) {
   mdat <- reactiveValues()
+
   observe({
     req(input$file1)
     mdat$data <- read.csv(input$file1$datapath,
