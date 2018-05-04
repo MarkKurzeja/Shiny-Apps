@@ -9,7 +9,7 @@ ui <- fluidPage(
   wellPanel(
     fluidRow(
       column(
-        3,
+        4,
         fileInput(
           "file1",
           "Choose CSV File",
@@ -19,7 +19,12 @@ ui <- fluidPage(
                      ".csv")
         ),
         actionButton("defaultData", 
-                     "Use Default Dataset"
+                     "Use Default Dataset",
+                     width = 175
+        ),
+        actionButton("uploadedData", 
+                     "Use Uploaded Dataset",
+                     width = 175
         )
       ),
       column(
@@ -67,10 +72,6 @@ ui <- fluidPage(
       9,
       h4("Joint Distribution"),
       plotOutput("mainPlot", height = 350),
-      # click = "plot1_click",
-      # brush = brushOpts(
-      # id = "plot1_brush"
-      # )),
       h4("Marginal Distribution of X"),
       plotOutput("xMarginal", height = 150)
     )
@@ -81,8 +82,10 @@ ui <- fluidPage(
 # Define server logic to read selected file ----
 server <- function(input, output) {
   mdat <- reactiveValues()
-  LOADED_DATA <- FALSE
-  observe({
+  sessionData <- reactiveValues(values = list(LOADED_DATA <- FALSE))
+  
+  # If the file path changes, then update this 
+  observeEvent(input$uploadedData, {
     req(input$file1)
     mdat$data <- read.csv(input$file1$datapath,
                           header = T,
@@ -91,23 +94,22 @@ server <- function(input, output) {
     mdat$y <- mdat$data[, 2]
     mdat$keep    <- data.frame(x = mdat$x, y = mdat$y)
     mdat$exclude <- data.frame(x = mdat$x, y = mdat$y)
-    LOADED_DATA <- TRUE
+    sessionData$values$LOADED_DATA <- TRUE
   })
   
   observeEvent(input$defaultData, {
     mdat$data <- mtcars
-    mdat$x <- mdat$data[, 1]
-    mdat$y <- mdat$data[, 2]
+    mdat$x <- mdat$data$wt
+    mdat$y <- mdat$data$mpg
     mdat$keep    <- data.frame(x = mdat$x, y = mdat$y)
     mdat$exclude <- data.frame(x = mdat$x, y = mdat$y)
-    LOADED_DATA <- TRUE
+    sessionData$values$LOADED_DATA <- TRUE
   })
-  
-  
   
   # Dynamic Interactive prompt
   output$prompt <- renderText({
-    req(input$file1)
+    req(sessionData$values$LOADED_DATA)
+    req(input$showPrompt == "Yes")
     
     histeff <-
       "We can see that outliers in the graph show up as extreme points in the histogram."
@@ -161,7 +163,7 @@ server <- function(input, output) {
   })
   
   output$mainPlot <- renderPlot({
-    req(input$file1)
+    req(sessionData$values$LOADED_DATA)
     base <- ggplot(mdat$keep, aes(x, y)) + geom_point() +
       geom_point(
         data = mdat$exclude,
@@ -228,7 +230,7 @@ server <- function(input, output) {
   
   # Plot of the x-marginal
   output$xMarginal <- renderPlot({
-    req(input$file1)
+    req(sessionData$values$LOADED_DATA)
     base <- ggplot(mdat$keep, aes(x)) + geom_histogram() +
       scale_x_continuous(limits = c(plotlimits()$xmin, plotlimits()$xmax)) +
       scale_y_continuous(
@@ -261,7 +263,7 @@ server <- function(input, output) {
   
   # Plot of the y-marginal
   output$yMarginal <- renderPlot({
-    req(input$file1)
+    req(sessionData$values$LOADED_DATA)
     base <-
       ggplot(mdat$keep, aes(y)) + geom_histogram() +  coord_flip() +
       scale_x_continuous(limits = c(plotlimits()$ymin, plotlimits()$ymax)) +
