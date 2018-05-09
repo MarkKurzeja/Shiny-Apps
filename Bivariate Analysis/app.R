@@ -6,11 +6,6 @@
 # Contact:       mtkurzej@umich.edu                                            #
 # Client:        Mark Kurzeja                                                  #
 #                                                                              #
-# Code created:  2018-05-09                                                    #
-# Last updated:  2018-05-09                                                    #
-# Source:        C:/Users/Mark K/Dropbox/Graduate School/10) Shiny Apps/Bivar  #
-#                iate Analysis                                                 #
-#                                                                              #
 # Comment:       This app aims to plot a simple bi-variate set of data, visua  #
 #                lizations, marginal distributions, and other metrics that     #
 #                are useful in data analysis                                   #
