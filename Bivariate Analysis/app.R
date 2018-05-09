@@ -95,7 +95,7 @@ ui <- fluidPage(
     column(
       3,
       h4("Marginal Distribution of Y"),
-      plotOutput("yMarginal", height = 350, width = 150)
+      plotOutput("yMarginal", height = 350)
     ),
     column(
       9,
@@ -201,14 +201,14 @@ server <- function(input, output) {
     }
     if (input$showMeans == "Yes") {
       meaneff = sprintf(
-        "The mean of X is %.2f and the mean of Y is %.2f. The mean is NOT robust to outliers, and it is pulled towards these values more significantly than the median is.",
+        "The mean of X is %.2f and the mean of Y is %.2f. The mean is NOT robust to outliers, and it is pulled towards outliers more significantly than the median is.",
         mean(mdat$keep$x),
         mean(mdat$keep$y)
       )
     }
     if (input$showBounds == "Yes") {
       boundseff = sprintf(
-        "The standard deviation of X is %.2f and the standard deviation of Y is %.2f. The standard deviation is NOT robust to outliers, and it widens when we include them in our analysis and narrows when we take them out.",
+        "The standard deviation of X is %.2f and the standard deviation of Y is %.2f. The standard deviation is NOT robust to outliers, and it widens when we include outliers in our analysis and narrows when we take outliers out.",
         sd(mdat$keep$x),
         sd(mdat$keep$y)
       )
@@ -280,9 +280,9 @@ server <- function(input, output) {
     }
     if (input$showMeans == "Yes") {
       base <-
-        base + geom_hline(yintercept = mean(mdat$keep$y), alpha = .5)
+        base + geom_hline(yintercept = mean(mdat$keep$y), alpha = 1)
       base <-
-        base + geom_vline(xintercept = mean(mdat$keep$x), alpha = .5)
+        base + geom_vline(xintercept = mean(mdat$keep$x), alpha = 1)
     }
     if (input$showBounds == "Yes") {
       base <-
