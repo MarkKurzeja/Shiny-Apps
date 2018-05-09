@@ -100,7 +100,7 @@ ui <- fluidPage(
     column(
       9,
       h4("Joint Distribution"),
-      plotOutput("mainPlot", height = 350),
+      plotOutput("mainPlot", height = 350, click = "plot_click"),
       h4("Marginal Distribution of X"),
       plotOutput("xMarginal", height = 150)
     )
@@ -115,7 +115,8 @@ ui <- fluidPage(
 ################################################################################
 server <- function(input, output) {
   mdat <- reactiveValues()
-  sessionData <- reactiveValues(values = list(LOADED_DATA <- FALSE))
+  sessionData <- reactiveValues(values = list(LOADED_DATA <- FALSE),
+                                selected = list(On = NA))
   
   ################################################################################
   #                                                                              #
@@ -128,25 +129,49 @@ server <- function(input, output) {
     mdat$data <- read.csv(input$file1$datapath,
                           header = T,
                           sep = ",")
+    # Remove all NA rows
+    data_in <- mdat$data[complete.cases(mdat$data), ][,c(1,2)]
+    mdat$data <- data.frame(x = data_in[ ,1], y = data_in[ ,2]) 
     mdat$x <- mdat$data[, 1]
     mdat$y <- mdat$data[, 2]
     mdat$keep    <- data.frame(x = mdat$x, y = mdat$y)
     mdat$exclude <- data.frame(x = mdat$x, y = mdat$y)
     sessionData$values$LOADED_DATA <- TRUE
+    sessionData$selected$On <- rep(TRUE, length(mdat$x))
   })
   
   ################################################################################
   #                                                                              #
-  #                     Code for loading in the default data                     #
+  # Code for importing the MTCARS dataset which is currently the default data    #
+  # set for visualization                                                        #
   #                                                                              #
   ################################################################################
   observeEvent(input$defaultData, {
-    mdat$data <- mtcars
-    mdat$x <- mdat$data$wt
-    mdat$y <- mdat$data$mpg
+    mdat$data <- data.frame(x = mtcars$wt, y = mtcars$mpg)
+    # Remove all NA rows
+    mdat$data <- mdat$data[complete.cases(mdat$data), ]
+    mdat$x <- mdat$data$x
+    mdat$y <- mdat$data$y
     mdat$keep    <- data.frame(x = mdat$x, y = mdat$y)
     mdat$exclude <- data.frame(x = mdat$x, y = mdat$y)
     sessionData$values$LOADED_DATA <- TRUE
+    sessionData$selected$On <- rep(TRUE, length(mdat$x))
+  })
+  
+  ################################################################################
+  #                                                                              #
+  #            Function for toggling the selected points when brushed            #
+  #                                                                              #
+  ################################################################################  
+  observeEvent(input$plot_click, {
+    req(sessionData$values$LOADED_DATA)
+    # Get the point that were clicked
+    res <- nearPoints(mdat$data, input$plot_click, allRows = TRUE)
+    sessionData$selected$On <- xor(res$selected_, sessionData$selected$On)
+    mdat$keep = mdat$data[sessionData$selected$On, ]
+    mdat$exclude = mdat$data[!sessionData$selected$On, ]
+    mdat$x <- mdat$keep$x
+    mdat$y <- mdat$keep$y
   })
   
   ################################################################################
@@ -203,15 +228,15 @@ server <- function(input, output) {
   plotlimits <- reactive({
     result <- list()
     
-    result$xmin = pretty(mdat$x, n = 5) %>% min %>% {. * 0.95}
-    result$xmax = pretty(mdat$x, n = 5) %>% max %>% {. * 1.05}
-    result$ymin = pretty(mdat$y, n = 5) %>% min %>% {. * 0.95}
-    result$ymax = pretty(mdat$y, n = 5) %>% max %>% {. * 1.05}
+    result$xmin = pretty(mdat$data$x, n = 5) %>% min %>% {. * 0.95}
+    result$xmax = pretty(mdat$data$x, n = 5) %>% max %>% {. * 1.05}
+    result$ymin = pretty(mdat$data$y, n = 5) %>% min %>% {. * 0.95}
+    result$ymax = pretty(mdat$data$y, n = 5) %>% max %>% {. * 1.05}
     
-    fauxhist = hist(mdat$x, plot = F, breaks = 30)
+    fauxhist = hist(mdat$data$x, plot = F, breaks = 30)
     result$xmincount <- 0
     result$xmaxcount <- fauxhist$counts %>% max
-    fauxhist = hist(mdat$y, plot = F, breaks = 30)
+    fauxhist = hist(mdat$data$y, plot = F, breaks = 30)
     result$ymincount <- 0
     result$ymaxcount <- fauxhist$counts %>% max()
     
@@ -227,13 +252,6 @@ server <- function(input, output) {
   output$mainPlot <- renderPlot({
     req(sessionData$values$LOADED_DATA)
     base <- ggplot(mdat$keep, aes(x, y)) + geom_point() +
-      geom_point(
-        data = mdat$exclude,
-        shape = 21,
-        fill = NA,
-        color = "black",
-        alpha = 0.25
-      ) +
       coord_cartesian(
         xlim = c(plotlimits()$xmin, plotlimits()$xmax),
         ylim = c(plotlimits()$ymin, plotlimits()$ymax)
@@ -245,6 +263,15 @@ server <- function(input, output) {
                x = plotlimits()$xmax, 
                y = plotlimits()$ymax,
                hjust=1)
+    if (mdat$exclude %>% nrow() != 0) {
+      base <- base + geom_point(
+        data = mdat$exclude,
+        shape = 21,
+        fill = NA,
+        color = "black",
+        alpha = 0.25
+      ) 
+    }
     if (input$showLine == "Yes") {
       base <-
         base + geom_smooth(method = lm,
