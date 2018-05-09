@@ -1,9 +1,38 @@
+################################################################################
+#                                                                              #
+# Purpose:       Bivariate Analysis Application                                #
+#                                                                              #
+# Author:        Mark Kurzeja                                                  #
+# Contact:       mtkurzej@umich.edu                                            #
+# Client:        Mark Kurzeja                                                  #
+#                                                                              #
+# Code created:  2018-05-09                                                    #
+# Last updated:  2018-05-09                                                    #
+# Source:        C:/Users/Mark K/Dropbox/Graduate School/10) Shiny Apps/Bivar  #
+#                iate Analysis                                                 #
+#                                                                              #
+# Comment:       This app aims to plot a simple bi-variate set of data, visua  #
+#                lizations, marginal distributions, and other metrics that     #
+#                are useful in data analysis                                   #
+#                                                                              #
+################################################################################
+
+################################################################################
+#                                                                              #
+#                                House Cleaning                                #
+#                                                                              #
+################################################################################
 library(shiny)
 library(ggplot2)
 library(magrittr)
 library(dplyr)
 
-# Define UI for data upload app ----
+
+################################################################################
+#                                                                              #
+#                          Define the UI for the app                           #
+#                                                                              #
+################################################################################
 ui <- fluidPage(
   titlePanel("Bivariate Distributions"),
   wellPanel(
@@ -66,7 +95,7 @@ ui <- fluidPage(
     column(
       3,
       h4("Marginal Distribution of Y"),
-      plotOutput("yMarginal", height = 350)
+      plotOutput("yMarginal", height = 350, width = 150)
     ),
     column(
       9,
@@ -79,12 +108,21 @@ ui <- fluidPage(
 )
 
 
-# Define server logic to read selected file ----
+################################################################################
+#                                                                              #
+#                           Define the Server Logic                            #
+#                                                                              #
+################################################################################
 server <- function(input, output) {
   mdat <- reactiveValues()
   sessionData <- reactiveValues(values = list(LOADED_DATA <- FALSE))
   
-  # If the file path changes, then update this 
+  ################################################################################
+  #                                                                              #
+  # Code for loading in the uploaded data - currently this function only         #
+  # supports CSV files                                                           #
+  #                                                                              #
+  ################################################################################
   observeEvent(input$uploadedData, {
     req(input$file1)
     mdat$data <- read.csv(input$file1$datapath,
@@ -97,6 +135,11 @@ server <- function(input, output) {
     sessionData$values$LOADED_DATA <- TRUE
   })
   
+  ################################################################################
+  #                                                                              #
+  #                     Code for loading in the default data                     #
+  #                                                                              #
+  ################################################################################
   observeEvent(input$defaultData, {
     mdat$data <- mtcars
     mdat$x <- mdat$data$wt
@@ -106,7 +149,13 @@ server <- function(input, output) {
     sessionData$values$LOADED_DATA <- TRUE
   })
   
-  # Dynamic Interactive prompt
+  ################################################################################
+  #                                                                              #
+  # Create the prompt that can be dynamically updated for the user and explains  #
+  # what is going on including the mean, standard deviation, line of best fit,   #
+  # etc                                                                          #
+  #                                                                              #
+  ################################################################################
   output$prompt <- renderText({
     req(sessionData$values$LOADED_DATA)
     req(input$showPrompt == "Yes")
@@ -143,7 +192,14 @@ server <- function(input, output) {
     sprintf("%s %s %s %s", histeff, lineeff, meaneff, boundseff)
   })
   
-  # Express limits of the plotting range as finite or dynamic values
+  ################################################################################
+  #                                                                              #
+  # The limits for the plot have to be established for the various datasets.     #
+  # This function aims to dynamically find the limits that would look good when  #
+  # plotting the data as well as determine the graphical parameters for the      #
+  # plots                                                                        #
+  #                                                                              #
+  ################################################################################
   plotlimits <- reactive({
     result <- list()
     
@@ -162,6 +218,12 @@ server <- function(input, output) {
     result
   })
   
+  ################################################################################
+  #                                                                              #
+  # Create the main bi-variate plot that we will plot the line of best fit,      #
+  # statistics, etc on                                                           #
+  #                                                                              #
+  ################################################################################
   output$mainPlot <- renderPlot({
     req(sessionData$values$LOADED_DATA)
     base <- ggplot(mdat$keep, aes(x, y)) + geom_point() +
@@ -228,7 +290,11 @@ server <- function(input, output) {
     base
   })
   
-  # Plot of the x-marginal
+  ################################################################################
+  #                                                                              #
+  #                     Plot the Marginal Distribution of X                      #
+  #                                                                              #
+  ################################################################################
   output$xMarginal <- renderPlot({
     req(sessionData$values$LOADED_DATA)
     base <- ggplot(mdat$keep, aes(x)) + geom_histogram() +
@@ -261,7 +327,11 @@ server <- function(input, output) {
     base
   })
   
-  # Plot of the y-marginal
+  ################################################################################
+  #                                                                              #
+  #                     Plot the Marginal Distribution of Y                      #
+  #                                                                              #
+  ################################################################################
   output$yMarginal <- renderPlot({
     req(sessionData$values$LOADED_DATA)
     base <-
@@ -292,5 +362,9 @@ server <- function(input, output) {
   })
 }
 
-# Create Shiny app ----
+################################################################################
+#                                                                              #
+#                             Create the Shiny App                             #
+#                                                                              #
+################################################################################
 shinyApp(ui, server)
