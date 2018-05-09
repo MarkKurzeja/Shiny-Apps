@@ -21,7 +21,7 @@ library(shiny)
 library(ggplot2)
 library(magrittr)
 library(dplyr)
-
+library(sjPlot)
 
 ################################################################################
 #                                                                              #
@@ -75,16 +75,16 @@ ui <- fluidPage(
           selected = "No"
         ),
         radioButtons(
-          "showPrompt",
-          "Show Prompt?",
-          choices = c("Yes", "No"),
-          selected = "Yes"
+          "whichPrompt",
+          "Display Option?",
+          choices = c("Discussion", "Diagnostics - 1", "Diagnostics - 2", "Diagnostics - 3", "None"),
+          selected = "Diagnostics"
         )
       )
     ),
-    fluidRow(column(10, h5(
-      textOutput("prompt")
-    )))
+    fluidRow(column(10, 
+      htmlOutput(HTML("prompt"))
+    ))
   ),
   fluidRow(
     column(
@@ -178,39 +178,75 @@ server <- function(input, output) {
   ################################################################################
   output$prompt <- renderText({
     req(sessionData$values$LOADED_DATA)
-    req(input$showPrompt == "Yes")
+    req(input$whichPrompt != "None")
+    lmres <- lm(y ~ x, data = mdat$keep)
     
-    histeff <-
-      "We can see that outliers in the graph show up as extreme points in the histogram."
-    lineeff <- ""
-    meaneff <- ""
-    boundseff <- ""
-    
-    if (input$showLine == "Yes") {
-      lmres <- lm(y ~ x, data = mdat$keep)
-      lineeff = sprintf(
-        "The intercept of the regression line is %.2f and the slope is %.2f. The regression line is 'pulled towards' values that are outliers. Outliers can have a very large effect on the slope and intercept of a regression line, and should always be included with caution.",
-        lmres$coefficients[1],
-        lmres$coefficients[2]
-      )
+    if(input$whichPrompt == "Discussion") {
+      histeff <-
+        "We can see that outliers in the graph show up as extreme points in the histogram."
+      lineeff <- ""
+      meaneff <- ""
+      boundseff <- ""
+      
+      if (input$showLine == "Yes") {
+        lineeff = sprintf(
+          "The intercept of the regression line is %.2f and the slope is %.2f. The regression line is 'pulled towards' values that are outliers. Outliers can have a very large effect on the slope and intercept of a regression line, and should always be included with caution.",
+          lmres$coefficients[1],
+          lmres$coefficients[2]
+        )
+      }
+      if (input$showMeans == "Yes") {
+        meaneff = sprintf(
+          "The mean of X is %.2f and the mean of Y is %.2f. The mean is NOT robust to outliers, and it is pulled towards outliers more significantly than the median is.",
+          mean(mdat$keep$x),
+          mean(mdat$keep$y)
+        )
+      }
+      if (input$showBounds == "Yes") {
+        boundseff = sprintf(
+          "The standard deviation of X is %.2f and the standard deviation of Y is %.2f. The standard deviation is NOT robust to outliers, and it widens when we include outliers in our analysis and narrows when we take outliers out.",
+          sd(mdat$keep$x),
+          sd(mdat$keep$y)
+        )
+      }
+      sprintf("%s %s %s %s", histeff, lineeff, meaneff, boundseff) %>% return()
+    } else if(input$whichPrompt == "Diagnostics - 1") {
+      stargazer::stargazer(lmres, type = "html", ci = T)
+    } else if(input$whichPrompt == "Diagnostics - 2") {
+      sjt.lm(lmres,
+             string.est = "Estimate",
+             string.ci = "Conf. Int.",
+             string.p = "p-value")$page.complete
+    } else if(input$whichPrompt == "Diagnostics - 3") {
+      sprintf("<strong>Relationships</strong>:<br>
+              &emsp;R: %.2f<br>
+              &emsp;R^2: %.2f<br>
+              <strong>Estimates</strong>:<br>
+              &emsp;Intercept: %.2f<br>
+              &emsp;Slope: %.2f<br>
+              &emsp;Line of Best Fit: %.2f + %.2fx<br>
+              <strong>Standard Errors</strong>:<br>
+              &emsp;Intercept: %.2f<br>
+              &emsp;Slope: %.2f",
+              cor(mdat$y, mdat$x),
+              summary(lmres)$r.squared,
+              lmres$coefficients[1],
+              lmres$coefficients[2],
+              lmres$coefficients[1],
+              lmres$coefficients[2],
+              summary(lmres)$coefficients[1,2],
+              summary(lmres)$coefficients[2,2]
+      ) %>% return()
+    } else { # Something went wrong
+      stop()
     }
-    if (input$showMeans == "Yes") {
-      meaneff = sprintf(
-        "The mean of X is %.2f and the mean of Y is %.2f. The mean is NOT robust to outliers, and it is pulled towards outliers more significantly than the median is.",
-        mean(mdat$keep$x),
-        mean(mdat$keep$y)
-      )
-    }
-    if (input$showBounds == "Yes") {
-      boundseff = sprintf(
-        "The standard deviation of X is %.2f and the standard deviation of Y is %.2f. The standard deviation is NOT robust to outliers, and it widens when we include outliers in our analysis and narrows when we take outliers out.",
-        sd(mdat$keep$x),
-        sd(mdat$keep$y)
-      )
-    }
-    
-    sprintf("%s %s %s %s", histeff, lineeff, meaneff, boundseff)
   })
+  
+  # renderTable({
+  #   req(input$whichPrompt == "Diagnostic")
+  #   lmres <- lm(y ~ x, data = mdat$keep)
+  #   stargazer::stargazer()
+  # })
   
   ################################################################################
   #                                                                              #
@@ -251,13 +287,7 @@ server <- function(input, output) {
         xlim = c(plotlimits()$xmin, plotlimits()$xmax),
         ylim = c(plotlimits()$ymin, plotlimits()$ymax)
       ) +
-      labs(x = "X", y = "Y") + 
-      annotate("text", 
-               label = sprintf("The Correlation between Y and X is: %.2f", 
-                               cor(mdat$y, mdat$x)), 
-               x = plotlimits()$xmax, 
-               y = plotlimits()$ymax,
-               hjust=1)
+      labs(x = "X", y = "Y")  
     if (mdat$exclude %>% nrow() != 0) {
       base <- base + geom_point(
         data = mdat$exclude,
