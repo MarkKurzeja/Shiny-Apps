@@ -34,6 +34,7 @@ ui <- fluidPage(
     fluidRow(
       column(
         4,
+        tags$h4("Upload a dataset or choose a dataset"),
         fileInput(
           "file1",
           "Choose CSV File",
@@ -74,18 +75,18 @@ ui <- fluidPage(
           choices = c("Yes", "No"),
           selected = "No"
         ),
-        radioButtons(
+        selectInput(
           "whichPrompt",
           "Display Option?",
           choices = c("Discussion", "Diagnostics - 1", "Diagnostics - 2", "Diagnostics - 3", "None"),
-          selected = "Diagnostics"
+          selected = "Diagnostics - 2"
         )
       )
-    ),
-    fluidRow(column(10, 
-      htmlOutput(HTML("prompt"))
-    ))
+    )
   ),
+  fluidRow(column(10, 
+    htmlOutput(HTML("prompt"))
+  )),
   fluidRow(
     column(
       3,
