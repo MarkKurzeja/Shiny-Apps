@@ -31,76 +31,90 @@ library(sjPlot)
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
-  titlePanel("Bivariate Distributions"),
-  wellPanel(
-    fluidRow(
-      column(
-        4,
-        tags$h4("Upload a dataset or choose a dataset"),
-        fileInput(
-          "file1",
-          "Choose CSV File",
-          multiple = TRUE,
-          accept = c("text/csv",
-                     "text/comma-separated-values,text/plain",
-                     ".csv")
-        ),
-        actionButton("defaultData", 
-                     "Use Default Dataset",
-                     width = 175
-        ),
-        actionButton("uploadedData", 
-                     "Use Uploaded Dataset",
-                     width = 175
+  tabsetPanel(
+    ################################################################################
+    #                                                                              #
+    #                              Bivariate Plot Tab                              #
+    #                                                                              #
+    ################################################################################
+    tabPanel("Bivariate Plot", 
+      titlePanel("Bivariate Distributions"),
+      wellPanel(
+        fluidRow(
+          column(
+            4,
+            tags$h4("Upload a dataset or choose a dataset"),
+            fileInput(
+              "file1",
+              "Choose CSV File",
+              multiple = TRUE,
+              accept = c("text/csv",
+                         "text/comma-separated-values,text/plain",
+                         ".csv")
+            ),
+            actionButton("defaultData", 
+                         "Use Default Dataset",
+                         width = 175
+            ),
+            actionButton("uploadedData", 
+                         "Use Uploaded Dataset",
+                         width = 175
+            )
+          ),
+          column(
+            3,
+            radioButtons(
+              "showLine",
+              "Show Regression Line?",
+              choices = c("Yes", "No"),
+              selected = "No"
+            ),
+            radioButtons(
+              "showMeans",
+              "Show mean of X & Y?",
+              choices = c("Yes", "No"),
+              selected = "No"
+            )
+          ),
+          column(
+            3,
+            radioButtons(
+              "showBounds",
+              "Show Standard Deviation?",
+              choices = c("Yes", "No"),
+              selected = "No"
+            ),
+            selectInput(
+              "whichPrompt",
+              "Display Option?",
+              choices = c("Discussion", "Diagnostics - 1", "Diagnostics - 2", "Diagnostics - 3", "None"),
+              selected = "Diagnostics - 2"
+            )
+          )
         )
       ),
-      column(
-        3,
-        radioButtons(
-          "showLine",
-          "Show Regression Line?",
-          choices = c("Yes", "No"),
-          selected = "No"
+      ################################# Prompt Line ##################################
+      fluidRow(column(10, 
+                      htmlOutput(HTML("prompt"))
+      )),
+      ######################### Main Panel of Bivariate Plot #########################
+      fluidRow(
+        column(
+          3,
+          h4("Marginal Distribution of Y"),
+          plotOutput("yMarginal", height = 350)
         ),
-        radioButtons(
-          "showMeans",
-          "Show mean of X & Y?",
-          choices = c("Yes", "No"),
-          selected = "No"
-        )
-      ),
-      column(
-        3,
-        radioButtons(
-          "showBounds",
-          "Show Standard Deviation?",
-          choices = c("Yes", "No"),
-          selected = "No"
-        ),
-        selectInput(
-          "whichPrompt",
-          "Display Option?",
-          choices = c("Discussion", "Diagnostics - 1", "Diagnostics - 2", "Diagnostics - 3", "None"),
-          selected = "Diagnostics - 2"
+        column(
+          9,
+          h4("Joint Distribution"),
+          plotOutput("mainPlot", height = 350, click = "plot_click"),
+          h4("Marginal Distribution of X"),
+          plotOutput("xMarginal", height = 150)
         )
       )
+    ), # End of Bivariate Tab
+    tabPanel("Interactive Histogram",
+    titlePanel("Interactive Histogram")
     )
-  ),
-  fluidRow(column(10, 
-                  htmlOutput(HTML("prompt"))
-  )),
-  fluidRow(
-    column(
-      3,
-      h4("Marginal Distribution of Y"),
-      plotOutput("yMarginal", height = 350)
-    ),
-    column(
-      9,
-      h4("Joint Distribution"),
-      plotOutput("mainPlot", height = 350, click = "plot_click"),
-      h4("Marginal Distribution of X"),
-      plotOutput("xMarginal", height = 150)
-    )
-  )
-))
+  ) # End of tabset Panel
+)) # End of fluid page and UI
