@@ -25,91 +25,12 @@ library(sjPlot)
 
 ################################################################################
 #                                                                              #
-#                          Define the UI for the app                           #
-#                                                                              #
-################################################################################
-ui <- fluidPage(
-  titlePanel("Bivariate Distributions"),
-  wellPanel(
-    fluidRow(
-      column(
-        4,
-        tags$h4("Upload a dataset or choose a dataset"),
-        fileInput(
-          "file1",
-          "Choose CSV File",
-          multiple = TRUE,
-          accept = c("text/csv",
-                     "text/comma-separated-values,text/plain",
-                     ".csv")
-        ),
-        actionButton("defaultData", 
-                     "Use Default Dataset",
-                     width = 175
-        ),
-        actionButton("uploadedData", 
-                     "Use Uploaded Dataset",
-                     width = 175
-        )
-      ),
-      column(
-        3,
-        radioButtons(
-          "showLine",
-          "Show Regression Line?",
-          choices = c("Yes", "No"),
-          selected = "No"
-        ),
-        radioButtons(
-          "showMeans",
-          "Show mean of X & Y?",
-          choices = c("Yes", "No"),
-          selected = "No"
-        )
-      ),
-      column(
-        3,
-        radioButtons(
-          "showBounds",
-          "Show Standard Deviation?",
-          choices = c("Yes", "No"),
-          selected = "No"
-        ),
-        selectInput(
-          "whichPrompt",
-          "Display Option?",
-          choices = c("Discussion", "Diagnostics - 1", "Diagnostics - 2", "Diagnostics - 3", "None"),
-          selected = "Diagnostics - 2"
-        )
-      )
-    )
-  ),
-  fluidRow(column(10, 
-    htmlOutput(HTML("prompt"))
-  )),
-  fluidRow(
-    column(
-      3,
-      h4("Marginal Distribution of Y"),
-      plotOutput("yMarginal", height = 350)
-    ),
-    column(
-      9,
-      h4("Joint Distribution"),
-      plotOutput("mainPlot", height = 350, click = "plot_click"),
-      h4("Marginal Distribution of X"),
-      plotOutput("xMarginal", height = 150)
-    )
-  )
-)
-
-
-################################################################################
-#                                                                              #
 #                           Define the Server Logic                            #
 #                                                                              #
 ################################################################################
-server <- function(input, output) {
+
+# Define server logic required to draw a histogram
+shinyServer(function(input, output) {
   mdat <- reactiveValues()
   sessionData <- reactiveValues(values = list(LOADED_DATA <- FALSE),
                                 selected = list(On = NA))
@@ -413,11 +334,4 @@ server <- function(input, output) {
     }
     base
   })
-}
-
-################################################################################
-#                                                                              #
-#                             Create the Shiny App                             #
-#                                                                              #
-################################################################################
-shinyApp(ui, server)
+})
