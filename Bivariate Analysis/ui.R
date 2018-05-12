@@ -30,91 +30,138 @@ library(sjPlot)
 ################################################################################
 
 # Define UI for application that draws a histogram
-shinyUI(fluidPage(
-  tabsetPanel(
-    ################################################################################
-    #                                                                              #
-    #                              Bivariate Plot Tab                              #
-    #                                                                              #
-    ################################################################################
-    tabPanel("Bivariate Plot", 
-      titlePanel("Bivariate Distributions"),
-      wellPanel(
+shinyUI(
+  fluidPage(
+    navbarPage(
+      "Cousera Apps",
+      ################################################################################
+      #                                                                              #
+      #                              Bivariate Plot Tab                              #
+      #                                                                              #
+      ################################################################################
+      tabPanel(
+        "Bivariate Plot",
+        titlePanel("Bivariate Distributions"),
+        wellPanel(
+          fluidRow(
+            column(
+              11,
+              fluidRow(
+                column(
+                  11,
+                  tags$h4("Upload a dataset or choose a dataset")
+                )
+              ),
+              column(
+                8,
+                fluidRow(
+                  column(
+                    8,
+                    tags$h5("Choose a Default Dataset")
+                  )
+                ),
+                fluidRow(
+                  column(
+                    8,
+                    column(
+                      6,
+                      selectInput(
+                        "defaultDataSelection",
+                        label = NULL,
+                        choices = c("Default - 1")
+                      )
+                    ),
+                    column(
+                      2,
+                      actionButton(
+                        "defaultData",
+                        "Use Default Dataset",
+                        width = 175
+                      )
+                    )
+                  )
+                ),
+                fluidRow(
+                  column(
+                    8,
+                    tags$h5("Or Upload your Own CSV")
+                  )
+                ),
+                fluidRow(
+                  column(
+                    8,
+                    column(
+                      6,
+                      fileInput(
+                        "file1",
+                        label = NULL,
+                        multiple = TRUE,
+                        accept = c("text/csv",
+                                   "text/comma-separated-values,text/plain",
+                                   ".csv")
+                      )
+                    ),
+                    column(
+                      2,
+                      actionButton(
+                        "uploadedData",
+                        "Use Uploaded Dataset",
+                        width = 175
+                      )
+                    )
+                  )
+                )
+              ),
+              column(
+                3,
+                checkboxGroupInput(
+                  "dispOptions",
+                  "Display Options",
+                  choices = c("Display Mean", "Display StdDev", "Display Fit")
+                ),
+                selectInput(
+                  "whichPrompt",
+                  "Display Option?",
+                  choices = c(
+                    "Discussion",
+                    "Diagnostics - 1",
+                    "Diagnostics - 2",
+                    "Diagnostics - 3",
+                    "None"
+                  ),
+                  selected = "None"
+                )
+              )
+            )
+          )
+        ),
+        
+        ################################# Prompt Line ##################################
         fluidRow(
           column(
-            4,
-            tags$h4("Upload a dataset or choose a dataset"),
-            fileInput(
-              "file1",
-              "Choose CSV File",
-              multiple = TRUE,
-              accept = c("text/csv",
-                         "text/comma-separated-values,text/plain",
-                         ".csv")
-            ),
-            actionButton("defaultData", 
-                         "Use Default Dataset",
-                         width = 175
-            ),
-            actionButton("uploadedData", 
-                         "Use Uploaded Dataset",
-                         width = 175
-            )
-          ),
+            10,
+            htmlOutput(HTML("prompt"))
+          )
+        ),
+        ######################### Main Panel of Bivariate Plot #########################
+        fluidRow(
           column(
             3,
-            radioButtons(
-              "showLine",
-              "Show Regression Line?",
-              choices = c("Yes", "No"),
-              selected = "No"
-            ),
-            radioButtons(
-              "showMeans",
-              "Show mean of X & Y?",
-              choices = c("Yes", "No"),
-              selected = "No"
-            )
+            h4("Marginal Distribution of Y"),
+            plotOutput("yMarginal", height = 350)
           ),
           column(
-            3,
-            radioButtons(
-              "showBounds",
-              "Show Standard Deviation?",
-              choices = c("Yes", "No"),
-              selected = "No"
-            ),
-            selectInput(
-              "whichPrompt",
-              "Display Option?",
-              choices = c("Discussion", "Diagnostics - 1", "Diagnostics - 2", "Diagnostics - 3", "None"),
-              selected = "Diagnostics - 2"
-            )
+            9,
+            h4("Joint Distribution"),
+            plotOutput("mainPlot", height = 350, click = "plot_click"),
+            h4("Marginal Distribution of X"),
+            plotOutput("xMarginal", height = 150)
           )
         )
       ),
-      ################################# Prompt Line ##################################
-      fluidRow(column(10, 
-                      htmlOutput(HTML("prompt"))
-      )),
-      ######################### Main Panel of Bivariate Plot #########################
-      fluidRow(
-        column(
-          3,
-          h4("Marginal Distribution of Y"),
-          plotOutput("yMarginal", height = 350)
-        ),
-        column(
-          9,
-          h4("Joint Distribution"),
-          plotOutput("mainPlot", height = 350, click = "plot_click"),
-          h4("Marginal Distribution of X"),
-          plotOutput("xMarginal", height = 150)
-        )
-      )
-    ), # End of Bivariate Tab
-    tabPanel("Interactive Histogram",
-    titlePanel("Interactive Histogram")
-    )
-  ) # End of tabset Panel
-)) # End of fluid page and UI
+      # End of Bivariate Tab
+      tabPanel("Interactive Histogram",
+               titlePanel("Interactive Histogram"))
+    ) # End of tabset Panel
+  )
+) # End of fluid page and UI)

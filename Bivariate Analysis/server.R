@@ -64,15 +64,20 @@ shinyServer(function(input, output) {
   #                                                                              #
   ################################################################################
   observeEvent(input$defaultData, {
-    mdat$data <- data.frame(x = mtcars$wt, y = mtcars$mpg)
-    # Remove all NA rows
-    mdat$data <- mdat$data[complete.cases(mdat$data), ]
-    mdat$x <- mdat$data$x
-    mdat$y <- mdat$data$y
-    mdat$keep    <- data.frame(x = mdat$x, y = mdat$y)
-    mdat$exclude <- data.frame(x = mdat$x, y = mdat$y)
-    sessionData$values$LOADED_DATA <- TRUE
-    sessionData$selected$On <- rep(TRUE, length(mdat$x))
+    
+    if (input$defaultDataSelection == "Default - 1") {
+      mdat$data <- data.frame(x = mtcars$wt, y = mtcars$mpg)
+      # Remove all NA rows
+      mdat$data <- mdat$data[complete.cases(mdat$data), ]
+      mdat$x <- mdat$data$x
+      mdat$y <- mdat$data$y
+      mdat$keep    <- data.frame(x = mdat$x, y = mdat$y)
+      mdat$exclude <- data.frame(x = mdat$x, y = mdat$y)
+      sessionData$values$LOADED_DATA <- TRUE
+      sessionData$selected$On <- rep(TRUE, length(mdat$x))
+    } else {
+      stop("A default option has not been implemented yet")
+    }
   })
   
   ################################################################################
@@ -109,22 +114,21 @@ shinyServer(function(input, output) {
       lineeff <- ""
       meaneff <- ""
       boundseff <- ""
-      
-      if (input$showLine == "Yes") {
+      if ("Display Fit" %in% input$dispOptions) {
         lineeff = sprintf(
           "The intercept of the regression line is %.2f and the slope is %.2f. The regression line is 'pulled towards' values that are outliers. Outliers can have a very large effect on the slope and intercept of a regression line, and should always be included with caution.",
           lmres$coefficients[1],
           lmres$coefficients[2]
         )
       }
-      if (input$showMeans == "Yes") {
+      if ("Display Mean" %in% input$dispOptions) {
         meaneff = sprintf(
           "The mean of X is %.2f and the mean of Y is %.2f. The mean is NOT robust to outliers, and it is pulled towards outliers more significantly than the median is.",
           mean(mdat$keep$x),
           mean(mdat$keep$y)
         )
       }
-      if (input$showBounds == "Yes") {
+      if ("Display StdDev" %in% input$dispOptions) {
         boundseff = sprintf(
           "The standard deviation of X is %.2f and the standard deviation of Y is %.2f. The standard deviation is NOT robust to outliers, and it widens when we include outliers in our analysis and narrows when we take outliers out.",
           sd(mdat$keep$x),
@@ -164,11 +168,6 @@ shinyServer(function(input, output) {
     }
   })
   
-  # renderTable({
-  #   req(input$whichPrompt == "Diagnostic")
-  #   lmres <- lm(y ~ x, data = mdat$keep)
-  #   stargazer::stargazer()
-  # })
   
   ################################################################################
   #                                                                              #
@@ -219,19 +218,19 @@ shinyServer(function(input, output) {
         alpha = 0.25
       ) 
     }
-    if (input$showLine == "Yes") {
+    if ("Display Fit" %in% input$dispOptions) {
       base <-
         base + geom_smooth(method = lm,
                            fullrange = TRUE,
                            color = "black")
     }
-    if (input$showMeans == "Yes") {
+    if ("Display Mean" %in% input$dispOptions) {
       base <-
         base + geom_hline(yintercept = mean(mdat$keep$y), alpha = 1)
       base <-
         base + geom_vline(xintercept = mean(mdat$keep$x), alpha = 1)
     }
-    if (input$showBounds == "Yes") {
+    if ("Display StdDev" %in% input$dispOptions) {
       base <-
         base + geom_vline(
           xintercept = mean(mdat$keep$x) - 1 * sd(mdat$keep$x),
@@ -279,10 +278,10 @@ shinyServer(function(input, output) {
           sprintf("%.0f", x)
       ) +
       labs(x = "X", y = "Counts")
-    if (input$showMeans == "Yes") {
+    if ("Display Mean" %in% input$dispOptions) {
       base <- base + geom_vline(xintercept = mean(mdat$keep$x))
     }
-    if (input$showBounds == "Yes") {
+    if ("Display StdDev" %in% input$dispOptions) {
       base <-
         base + geom_vline(
           xintercept = mean(mdat$keep$x) - 1 * sd(mdat$keep$x),
@@ -313,10 +312,10 @@ shinyServer(function(input, output) {
       scale_x_continuous(limits = c(plotlimits()$ymin, plotlimits()$ymax)) +
       scale_y_continuous(limits = c(plotlimits()$ymincount, plotlimits()$ymaxcount)) +
       labs(x = "Y", y = "Counts")
-    if (input$showMeans == "Yes") {
+    if ("Display Mean" %in% input$dispOptions) {
       base <- base + geom_vline(xintercept = mean(mdat$keep$y))
     }
-    if (input$showBounds == "Yes") {
+    if ("Display StdDev" %in% input$dispOptions) {
       base <-
         base + geom_vline(
           xintercept = mean(mdat$keep$y) + 1 * sd(mdat$keep$y),
