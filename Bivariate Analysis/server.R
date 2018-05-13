@@ -35,12 +35,8 @@ shinyServer(function(input, output) {
   sessionData <- reactiveValues(values = list(LOADED_DATA <- FALSE),
                                 selected = list(On = NA))
   
-  ################################################################################
-  #                                                                              #
   # Code for loading in the uploaded data - currently this function only         #
   # supports CSV files                                                           #
-  #                                                                              #
-  ################################################################################
   observeEvent(input$uploadedData, {
     req(input$file1)
     mdat$data <- read.csv(input$file1$datapath,
@@ -57,12 +53,8 @@ shinyServer(function(input, output) {
     sessionData$selected$On <- rep(TRUE, length(mdat$x))
   })
   
-  ################################################################################
-  #                                                                              #
   # Code for importing the MTCARS dataset which is currently the default data    #
   # set for visualization                                                        #
-  #                                                                              #
-  ################################################################################
   observeEvent(input$defaultData, {
     
     if (input$defaultDataSelection == "Default - 1") {
@@ -80,11 +72,7 @@ shinyServer(function(input, output) {
     }
   })
   
-  ################################################################################
-  #                                                                              #
-  #            Function for toggling the selected points when brushed            #
-  #                                                                              #
-  ################################################################################  
+  ############ Function for toggling the selected points when brushed ############ 
   observeEvent(input$plot_click, {
     req(sessionData$values$LOADED_DATA)
     # Get the point that were clicked
@@ -96,13 +84,9 @@ shinyServer(function(input, output) {
     mdat$y <- mdat$keep$y
   })
   
-  ################################################################################
-  #                                                                              #
   # Create the prompt that can be dynamically updated for the user and explains  #
   # what is going on including the mean, standard deviation, line of best fit,   #
   # etc                                                                          #
-  #                                                                              #
-  ################################################################################
   output$prompt <- renderText({
     req(sessionData$values$LOADED_DATA)
     req(input$whichPrompt != "None")
@@ -168,15 +152,10 @@ shinyServer(function(input, output) {
     }
   })
   
-  
-  ################################################################################
-  #                                                                              #
   # The limits for the plot have to be established for the various datasets.     #
   # This function aims to dynamically find the limits that would look good when  #
   # plotting the data as well as determine the graphical parameters for the      #
   # plots                                                                        #
-  #                                                                              #
-  ################################################################################
   plotlimits <- reactive({
     result <- list()
     
@@ -195,12 +174,8 @@ shinyServer(function(input, output) {
     result
   })
   
-  ################################################################################
-  #                                                                              #
   # Create the main bi-variate plot that we will plot the line of best fit,      #
   # statistics, etc on                                                           #
-  #                                                                              #
-  ################################################################################
   output$mainPlot <- renderPlot({
     req(sessionData$values$LOADED_DATA)
     base <- ggplot(mdat$keep, aes(x, y)) + geom_point() +
@@ -263,11 +238,7 @@ shinyServer(function(input, output) {
     base
   })
   
-  ################################################################################
-  #                                                                              #
-  #                     Plot the Marginal Distribution of X                      #
-  #                                                                              #
-  ################################################################################
+  ##################### Plot the Marginal Distribution of X ######################
   output$xMarginal <- renderPlot({
     req(sessionData$values$LOADED_DATA)
     base <- ggplot(mdat$keep, aes(x)) + geom_histogram() +
@@ -299,12 +270,7 @@ shinyServer(function(input, output) {
     }
     base
   })
-  
-  ################################################################################
-  #                                                                              #
-  #                     Plot the Marginal Distribution of Y                      #
-  #                                                                              #
-  ################################################################################
+  ##################### Plot the Marginal Distribution of Y ######################
   output$yMarginal <- renderPlot({
     req(sessionData$values$LOADED_DATA)
     base <-
