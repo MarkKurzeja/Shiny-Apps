@@ -93,7 +93,8 @@ shinyServer(function(input, output) {
       sessionData$selected$On <- rep(TRUE, length(mdat$x))
     } else if(input$defaultDataSelection == "Corr. Norm.") {
       set.seed(123)
-      k = mvtnorm::rmvnorm(200, sigma = matrix(c(1,.85, .85, 1), nrow = 2))
+      corr <- input$corrSlider
+      k = mvtnorm::rmvnorm(400, sigma = matrix(c(1, corr, corr, 1), nrow = 2))
       mdat$data <- data.frame(x = k[,1], y = k[,2])
       
       # Get the row names for the variable names
@@ -167,8 +168,8 @@ shinyServer(function(input, output) {
       sprintf("<strong>Correlation</strong>:<br>
               &emsp;\\(R\\): %.2f<br>
               &emsp;\\(R^2\\): %.2f<br><script>MathJax.Hub.Queue([\"Typeset\", MathJax.Hub]);</script>",
-              cor(mdat$y, mdat$x),
-              summary(lmres)$r.squared
+              ifelse(input$defaultDataSelection == "Corr. Norm.", input$corrSlider, cor(mdat$y, mdat$x)),
+              ifelse(input$defaultDataSelection == "Corr. Norm.", input$corrSlider^2, summary(lmres)$r.squared)
               ) %>% return()
     } else if(input$whichPrompt == "Diagnostics - 1") {
       stargazer::stargazer(lmres, type = "html", ci = T)
@@ -188,8 +189,8 @@ shinyServer(function(input, output) {
               <strong>Standard Errors</strong>:<br>
               &emsp;Intercept: %.2f<br>
               &emsp;Slope: %.2f<script>MathJax.Hub.Queue([\"Typeset\", MathJax.Hub]);</script>",
-              cor(mdat$y, mdat$x),
-              summary(lmres)$r.squared,
+              ifelse(input$defaultDataSelection == "Corr. Norm.", input$corrSlider, cor(mdat$y, mdat$x)),
+              ifelse(input$defaultDataSelection == "Corr. Norm.", input$corrSlider^2, summary(lmres)$r.squared),
               lmres$coefficients[1],
               lmres$coefficients[2],
               lmres$coefficients[1],

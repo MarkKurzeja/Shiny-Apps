@@ -140,8 +140,16 @@ shinyUI(
                     "None"
                   ),
                   selected = "None"
+                ),
+                tags$h4("Correlation Slider"),
+                sliderInput(
+                  "corrSlider",
+                  label = NULL,
+                  min = -1, 
+                  max = 1, 
+                  value = 0.85, 
+                  step = 0.10
                 )
-                
               )
             )
           )
