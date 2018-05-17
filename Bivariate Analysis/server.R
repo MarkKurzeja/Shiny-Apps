@@ -42,6 +42,10 @@ shinyServer(function(input, output) {
     mdat$data <- read.csv(input$file1$datapath,
                           header = T,
                           sep = ",")
+    # Get the row names for the variable names
+    mdat$x_lab_name = colnames(mdat$data)[1]
+    mdat$y_lab_name = colnames(mdat$data)[2]
+    
     # Remove all NA rows
     data_in <- mdat$data[complete.cases(mdat$data), ][,c(1,2)]
     mdat$data <- data.frame(x = data_in[ ,1], y = data_in[ ,2]) 
@@ -59,6 +63,11 @@ shinyServer(function(input, output) {
     
     if (input$defaultDataSelection == "Default - 1") {
       mdat$data <- data.frame(x = mtcars$wt, y = mtcars$mpg)
+      
+      # Get the row names for the variable names
+      mdat$x_lab_name = "Weight of a Vehicle"
+      mdat$y_lab_name = "Miles Per Gallon"
+      
       # Remove all NA rows
       mdat$data <- mdat$data[complete.cases(mdat$data), ]
       mdat$x <- mdat$data$x
@@ -183,7 +192,7 @@ shinyServer(function(input, output) {
         xlim = c(plotlimits()$xmin, plotlimits()$xmax),
         ylim = c(plotlimits()$ymin, plotlimits()$ymax)
       ) +
-      labs(x = "X", y = "Y")  
+      labs(x = mdat$x_lab_name, y = mdat$y_lab_name)  
     if (mdat$exclude %>% nrow() != 0) {
       base <- base + geom_point(
         data = mdat$exclude,
@@ -197,7 +206,7 @@ shinyServer(function(input, output) {
       base <-
         base + geom_smooth(method = lm,
                            fullrange = TRUE,
-                           color = "black")
+                           color = "blue")
     }
     if ("Display Mean" %in% input$dispOptions) {
       base <-
@@ -247,7 +256,7 @@ shinyServer(function(input, output) {
         labels = function(x)
           sprintf("%.0f", x)
       ) +
-      labs(x = "X", y = "Counts")
+      labs(x = mdat$x_lab_name, y = "Counts")
     if ("Display Mean" %in% input$dispOptions) {
       base <- base + geom_vline(xintercept = mean(mdat$keep$x))
     }
@@ -275,7 +284,7 @@ shinyServer(function(input, output) {
     base <-
       ggplot(mdat$keep, aes(y)) + geom_histogram() +  coord_flip() +
       scale_x_continuous(limits = c(plotlimits()$ymin, plotlimits()$ymax)) +
-      labs(x = "Y", y = "Counts")
+      labs(x = mdat$y_lab_name, y = "Counts")
     if ("Display Mean" %in% input$dispOptions) {
       base <- base + geom_vline(xintercept = mean(mdat$keep$y))
     }
