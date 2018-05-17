@@ -65,7 +65,7 @@ shinyServer(function(input, output) {
       mdat$data <- data.frame(x = mtcars$wt, y = mtcars$mpg)
       
       # Get the row names for the variable names
-      mdat$x_lab_name = "Weight of a Vehicle"
+      mdat$x_lab_name = "Weight of a Vehicle (1000 lbs)"
       mdat$y_lab_name = "Miles Per Gallon"
       
       # Remove all NA rows
@@ -116,15 +116,19 @@ shinyServer(function(input, output) {
       }
       if ("Display Mean" %in% input$dispOptions) {
         meaneff = sprintf(
-          "The mean of X is %.2f and the mean of Y is %.2f. The mean is NOT robust to outliers, and it is pulled towards outliers more significantly than the median is.",
+          "The mean of <i>%s</i> is %.2f and the mean of <i>%s</i> is %.2f. The mean is NOT robust to outliers, and it is pulled towards outliers more significantly than the median is.",
+          mdat$x_lab_name,
           mean(mdat$keep$x),
+          mdat$y_lab_name,
           mean(mdat$keep$y)
         )
       }
       if ("Display StdDev" %in% input$dispOptions) {
         boundseff = sprintf(
-          "The standard deviation of X is %.2f and the standard deviation of Y is %.2f. The standard deviation is NOT robust to outliers, and it widens when we include outliers in our analysis and narrows when we take outliers out.",
+          "The standard deviation of <i>%s</i> is %.2f and the standard deviation of <i>%s</i> is %.2f. The standard deviation is NOT robust to outliers, and it widens when we include outliers in our analysis and narrows when we take outliers out.",
+          mdat$x_lab_name,
           sd(mdat$keep$x),
+          mdat$y_lab_name,
           sd(mdat$keep$y)
         )
       }

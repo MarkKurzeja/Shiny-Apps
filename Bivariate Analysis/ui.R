@@ -45,24 +45,24 @@ shinyUI(
         wellPanel(
           fluidRow(
             column(
-              11,
+              12,
               fluidRow(
                 column(
-                  11,
+                  12,
                   tags$h4("Upload a dataset or choose a dataset")
                 )
               ),
               column(
-                8,
+                7,
                 fluidRow(
                   column(
-                    8,
+                    7,
                     tags$h5("Choose a Default Dataset")
                   )
                 ),
                 fluidRow(
                   column(
-                    8,
+                    7,
                     column(
                       6,
                       selectInput(
@@ -72,7 +72,7 @@ shinyUI(
                       )
                     ),
                     column(
-                      2,
+                      1,
                       actionButton(
                         "defaultData",
                         "Use Default Dataset",
@@ -83,13 +83,13 @@ shinyUI(
                 ),
                 fluidRow(
                   column(
-                    8,
+                    7,
                     tags$h5("Or Upload your Own CSV")
                   )
                 ),
                 fluidRow(
                   column(
-                    8,
+                    7,
                     column(
                       6,
                       fileInput(
@@ -102,7 +102,7 @@ shinyUI(
                       )
                     ),
                     column(
-                      2,
+                      1,
                       actionButton(
                         "uploadedData",
                         "Use Uploaded Dataset",
@@ -113,15 +113,20 @@ shinyUI(
                 )
               ),
               column(
-                3,
+                2,
+                tags$h4("Plotting Options"),
                 checkboxGroupInput(
                   "dispOptions",
-                  "Display Options",
+                  label = NULL,
                   choices = c("Display Mean", "Display StdDev", "Display Fit")
-                ),
+                )
+              ),
+              column(
+                3,
+                tags$h4("Prompt Display Options"),
                 selectInput(
                   "whichPrompt",
-                  "Display Option?",
+                  label = NULL,
                   choices = c(
                     "Discussion",
                     "Correlation",
@@ -132,6 +137,7 @@ shinyUI(
                   ),
                   selected = "None"
                 )
+                
               )
             )
           )
