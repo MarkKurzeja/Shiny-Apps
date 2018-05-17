@@ -22,6 +22,7 @@ library(ggplot2)
 library(magrittr)
 library(dplyr)
 library(sjPlot)
+library(mvtnorm)
 
 ################################################################################
 #                                                                              #
@@ -61,7 +62,7 @@ shinyServer(function(input, output) {
   # set for visualization                                                        #
   observeEvent(input$defaultData, {
     
-    if (input$defaultDataSelection == "Default - 1") {
+    if (input$defaultDataSelection == "Wt | MPG") {
       mdat$data <- data.frame(x = mtcars$wt, y = mtcars$mpg)
       
       # Get the row names for the variable names
@@ -70,6 +71,35 @@ shinyServer(function(input, output) {
       
       # Remove all NA rows
       mdat$data <- mdat$data[complete.cases(mdat$data), ]
+      mdat$x <- mdat$data$x
+      mdat$y <- mdat$data$y
+      mdat$keep    <- data.frame(x = mdat$x, y = mdat$y)
+      mdat$exclude <- data.frame(x = mdat$x, y = mdat$y)
+      sessionData$values$LOADED_DATA <- TRUE
+      sessionData$selected$On <- rep(TRUE, length(mdat$x))
+    } else if(input$defaultDataSelection == "Indep. Norm.") {
+      set.seed(123)
+      mdat$data <- data.frame(x = rnorm(400, 0, 10), y = rnorm(400, 0, 3))
+      
+      # Get the row names for the variable names
+      mdat$x_lab_name = "X"
+      mdat$y_lab_name = "Y"
+      
+      mdat$x <- mdat$data$x
+      mdat$y <- mdat$data$y
+      mdat$keep    <- data.frame(x = mdat$x, y = mdat$y)
+      mdat$exclude <- data.frame(x = mdat$x, y = mdat$y)
+      sessionData$values$LOADED_DATA <- TRUE
+      sessionData$selected$On <- rep(TRUE, length(mdat$x))
+    } else if(input$defaultDataSelection == "Corr. Norm.") {
+      set.seed(123)
+      k = mvtnorm::rmvnorm(200, sigma = matrix(c(1,.85, .85, 1), nrow = 2))
+      mdat$data <- data.frame(x = k[,1], y = k[,2])
+      
+      # Get the row names for the variable names
+      mdat$x_lab_name = "X"
+      mdat$y_lab_name = "Y"
+      
       mdat$x <- mdat$data$x
       mdat$y <- mdat$data$y
       mdat$keep    <- data.frame(x = mdat$x, y = mdat$y)
@@ -139,7 +169,7 @@ shinyServer(function(input, output) {
               &emsp;\\(R^2\\): %.2f<br><script>MathJax.Hub.Queue([\"Typeset\", MathJax.Hub]);</script>",
               cor(mdat$y, mdat$x),
               summary(lmres)$r.squared
-      ) %>% return()
+              ) %>% return()
     } else if(input$whichPrompt == "Diagnostics - 1") {
       stargazer::stargazer(lmres, type = "html", ci = T)
     } else if(input$whichPrompt == "Diagnostics - 2") {
@@ -166,7 +196,7 @@ shinyServer(function(input, output) {
               lmres$coefficients[2],
               summary(lmres)$coefficients[1,2],
               summary(lmres)$coefficients[2,2]
-      ) %>% return()
+              ) %>% return()
     } else { # Something went wrong
       stop()
     }

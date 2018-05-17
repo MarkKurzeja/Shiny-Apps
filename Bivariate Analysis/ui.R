@@ -68,7 +68,11 @@ shinyUI(
                       selectInput(
                         "defaultDataSelection",
                         label = NULL,
-                        choices = c("Default - 1")
+                        choices = c(
+                          "Wt | MPG",
+                          "Indep. Norm.",
+                          "Corr. Norm."
+                        )
                       )
                     ),
                     column(
