@@ -124,6 +124,7 @@ shinyUI(
                   "Display Option?",
                   choices = c(
                     "Discussion",
+                    "Correlation",
                     "Diagnostics - 1",
                     "Diagnostics - 2",
                     "Diagnostics - 3",
@@ -140,7 +141,7 @@ shinyUI(
         fluidRow(
           column(
             10,
-            htmlOutput(HTML("prompt"))
+            withMathJax(htmlOutput("prompt"))
           )
         ),
         ######################### Main Panel of Bivariate Plot #########################

@@ -120,6 +120,13 @@ shinyServer(function(input, output) {
         )
       }
       sprintf("%s %s %s %s", histeff, lineeff, meaneff, boundseff) %>% return()
+    } else if(input$whichPrompt == "Correlation") {
+      sprintf("<strong>Correlation</strong>:<br>
+              &emsp;\\(R\\): %.2f<br>
+              &emsp;\\(R^2\\): %.2f<br><script>MathJax.Hub.Queue([\"Typeset\", MathJax.Hub]);</script>",
+              cor(mdat$y, mdat$x),
+              summary(lmres)$r.squared
+      ) %>% return()
     } else if(input$whichPrompt == "Diagnostics - 1") {
       stargazer::stargazer(lmres, type = "html", ci = T)
     } else if(input$whichPrompt == "Diagnostics - 2") {
@@ -129,15 +136,15 @@ shinyServer(function(input, output) {
              string.p = "p-value")$page.complete
     } else if(input$whichPrompt == "Diagnostics - 3") {
       sprintf("<strong>Relationships</strong>:<br>
-              &emsp;R: %.2f<br>
-              &emsp;R^2: %.2f<br>
+              &emsp;\\(R\\): %.2f<br>
+              &emsp;\\(R^2\\): %.2f<br>
               <strong>Estimates</strong>:<br>
               &emsp;Intercept: %.2f<br>
               &emsp;Slope: %.2f<br>
-              &emsp;Line of Best Fit: %.2f + %.2fx<br>
+              &emsp;Line of Best Fit: \\(%.2f + %.2fx\\)<br>
               <strong>Standard Errors</strong>:<br>
               &emsp;Intercept: %.2f<br>
-              &emsp;Slope: %.2f",
+              &emsp;Slope: %.2f<script>MathJax.Hub.Queue([\"Typeset\", MathJax.Hub]);</script>",
               cor(mdat$y, mdat$x),
               summary(lmres)$r.squared,
               lmres$coefficients[1],
