@@ -77,21 +77,7 @@ shinyServer(function(input, output) {
       mdat$exclude <- data.frame(x = mdat$x, y = mdat$y)
       sessionData$values$LOADED_DATA <- TRUE
       sessionData$selected$On <- rep(TRUE, length(mdat$x))
-    } else if(input$defaultDataSelection == "Indep. Norm.") {
-      set.seed(123)
-      mdat$data <- data.frame(x = rnorm(400, 0, 10), y = rnorm(400, 0, 3))
-      
-      # Get the row names for the variable names
-      mdat$x_lab_name = "X"
-      mdat$y_lab_name = "Y"
-      
-      mdat$x <- mdat$data$x
-      mdat$y <- mdat$data$y
-      mdat$keep    <- data.frame(x = mdat$x, y = mdat$y)
-      mdat$exclude <- data.frame(x = mdat$x, y = mdat$y)
-      sessionData$values$LOADED_DATA <- TRUE
-      sessionData$selected$On <- rep(TRUE, length(mdat$x))
-    } else if(input$defaultDataSelection == "Corr. Norm.") {
+    } else if(input$defaultDataSelection == "Bivar. Normal") {
       set.seed(123)
       corr <- input$corrSlider
       k = mvtnorm::rmvnorm(400, sigma = matrix(c(1, corr, corr, 1), nrow = 2))
@@ -168,8 +154,8 @@ shinyServer(function(input, output) {
       sprintf("<strong>Correlation</strong>:<br>
               &emsp;\\(R\\): %.2f<br>
               &emsp;\\(R^2\\): %.2f<br><script>MathJax.Hub.Queue([\"Typeset\", MathJax.Hub]);</script>",
-              ifelse(input$defaultDataSelection == "Corr. Norm.", input$corrSlider, cor(mdat$y, mdat$x)),
-              ifelse(input$defaultDataSelection == "Corr. Norm.", input$corrSlider^2, summary(lmres)$r.squared)
+              ifelse(input$defaultDataSelection == "Bivar. Normal", input$corrSlider, cor(mdat$y, mdat$x)),
+              ifelse(input$defaultDataSelection == "Bivar. Normal", input$corrSlider^2, summary(lmres)$r.squared)
               ) %>% return()
     } else if(input$whichPrompt == "Diagnostics - 1") {
       stargazer::stargazer(lmres, type = "html", ci = T)
@@ -189,8 +175,8 @@ shinyServer(function(input, output) {
               <strong>Standard Errors</strong>:<br>
               &emsp;Intercept: %.2f<br>
               &emsp;Slope: %.2f<script>MathJax.Hub.Queue([\"Typeset\", MathJax.Hub]);</script>",
-              ifelse(input$defaultDataSelection == "Corr. Norm.", input$corrSlider, cor(mdat$y, mdat$x)),
-              ifelse(input$defaultDataSelection == "Corr. Norm.", input$corrSlider^2, summary(lmres)$r.squared),
+              ifelse(input$defaultDataSelection == "Bivar. Normal", input$corrSlider, cor(mdat$y, mdat$x)),
+              ifelse(input$defaultDataSelection == "Bivar. Normal", input$corrSlider^2, summary(lmres)$r.squared),
               lmres$coefficients[1],
               lmres$coefficients[2],
               lmres$coefficients[1],

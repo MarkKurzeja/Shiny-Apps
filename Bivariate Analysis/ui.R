@@ -70,8 +70,7 @@ shinyUI(
                         label = NULL,
                         choices = c(
                           "Wt | MPG",
-                          "Indep. Norm.",
-                          "Corr. Norm."
+                          "Bivar. Normal"
                         )
                       )
                     ),
@@ -147,7 +146,7 @@ shinyUI(
                   label = NULL,
                   min = -1, 
                   max = 1, 
-                  value = 0.85, 
+                  value = 0, 
                   step = 0.10
                 )
               )
