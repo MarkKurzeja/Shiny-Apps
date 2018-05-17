@@ -164,13 +164,6 @@ shinyServer(function(input, output) {
     result$ymin = pretty(mdat$data$y, n = 5) %>% min %>% {. * 0.95}
     result$ymax = pretty(mdat$data$y, n = 5) %>% max %>% {. * 1.05}
     
-    fauxhist = hist(mdat$data$x, plot = F, breaks = 30)
-    result$xmincount <- 0
-    result$xmaxcount <- fauxhist$counts %>% max
-    fauxhist = hist(mdat$data$y, plot = F, breaks = 30)
-    result$ymincount <- 0
-    result$ymaxcount <- fauxhist$counts %>% max()
-    
     result
   })
   
@@ -244,7 +237,6 @@ shinyServer(function(input, output) {
     base <- ggplot(mdat$keep, aes(x)) + geom_histogram() +
       scale_x_continuous(limits = c(plotlimits()$xmin, plotlimits()$xmax)) +
       scale_y_continuous(
-        limits = c(plotlimits()$xmincount, plotlimits()$xmaxcount),
         labels = function(x)
           sprintf("%.0f", x)
       ) +
@@ -276,7 +268,6 @@ shinyServer(function(input, output) {
     base <-
       ggplot(mdat$keep, aes(y)) + geom_histogram() +  coord_flip() +
       scale_x_continuous(limits = c(plotlimits()$ymin, plotlimits()$ymax)) +
-      scale_y_continuous(limits = c(plotlimits()$ymincount, plotlimits()$ymaxcount)) +
       labs(x = "Y", y = "Counts")
     if ("Display Mean" %in% input$dispOptions) {
       base <- base + geom_vline(xintercept = mean(mdat$keep$y))
