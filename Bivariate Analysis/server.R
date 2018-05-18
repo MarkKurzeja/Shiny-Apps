@@ -340,17 +340,7 @@ shinyServer(function(input, output) {
   #                                                                              #
   ################################################################################
   
-  cwdata <- reactiveValues(
-    data = list(
-      data = NA,
-      x = NA,
-      name = NA,
-      min = NA, 
-      max = NA,
-      facet = NA,
-      firstPlot = NA
-    )
-  )
+  cwdata <- reactiveValues()
   
   observeEvent(input$cartWheelUpdate, {
     cwdata$data$data = read.csv("./Cartwheeldata.csv")
