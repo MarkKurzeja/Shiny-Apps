@@ -32,6 +32,11 @@ library(mvtnorm)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
+  ###############################################################################
+  #                                                                              #
+  #                            Bivariate Visualation                             #
+  #                                                                              #
+  ################################################################################
   mdat <- reactiveValues()
   sessionData <- reactiveValues(values = list(LOADED_DATA <- FALSE),
                                 selected = list(On = NA))
@@ -113,7 +118,7 @@ shinyServer(function(input, output) {
   # Create the prompt that can be dynamically updated for the user and explains  #
   # what is going on including the mean, standard deviation, line of best fit,   #
   # etc                                                                          #
-  output$prompt <- renderText({
+  output$bivarprompt <- renderText({
     req(sessionData$values$LOADED_DATA)
     req(input$whichPrompt != "None")
     lmres <- lm(y ~ x, data = mdat$keep)
@@ -326,5 +331,94 @@ shinyServer(function(input, output) {
         )
     }
     base
+  })
+  ################################################################################
+  #                                                                              #
+  #                              Cartwheel Dataset                               #
+  #                                                                              #
+  ################################################################################
+  
+  cwdata <- reactiveValues(
+    data = list(
+      data = NA,
+      x = NA,
+      name = NA,
+      min = NA, 
+      max = NA,
+      facet = NA,
+      firstPlot = NA
+    )
+  )
+  
+  observeEvent(input$cartWheelUpdate, {
+    cwdata$data$data = read.csv("./Cartwheeldata.csv")
+    cwdata$data$x = cwdata$data$data[[input$cartWheelPlotVar]]
+    cwdata$data$name = input$cartWheelPlotVar
+    cwdata$data$min = cwdata$data$x %>% pretty() %>% min %>% {. * 1}
+    cwdata$data$max = cwdata$data$x %>% pretty() %>% max %>% {. * 1}
+    if (input$cartWheelFacet == "None") {
+      cwdata$data$facet <- NA
+    } else {
+      cwdata$data$facet <- cwdata$data$data[[input$cartWheelFacet]]
+    }
+    cwdata$data$firstPlot = TRUE
+  })
+  
+  output$cartWheelPromptFirst <- renderText({
+    req(cwdata$data$firstPlot)
+    d <- cwdata$data$x
+    # browser()
+    sprintf(
+      "&emsp;<strong>Min</strong>: %.2f<br>
+      &emsp;<strong>Q1</strong>: %.2f<br>
+      &emsp;<strong>Median</strong>: %.2f<br>
+      &emsp;<strong>Mean</strong>: %.2f<br>
+      &emsp;<strong>Q3</strong>: %.2f<br>
+      &emsp;<strong>Max</strong>: %.2f<br>
+      &emsp;<strong>Standard Deviation</strong>: %.2f<br>
+      &emsp;<strong>IQR</strong>: %.2f<br>
+      &emsp;<strong>n</strong>: %i<br>
+      <script>MathJax.Hub.Queue([\"Typeset\", MathJax.Hub]);</script>",
+      min(d),
+      quantile(d, probs = 0.25),
+      quantile(d, probs = 0.50),
+      mean(d),
+      quantile(d, probs = 0.75),
+      max(d),
+      sd(d),
+      quantile(d, probs = 0.75) - quantile(d, probs = 0.25),
+      length(d)
+      ) 
+  })  
+  
+  output$cartWheelBoxPlot <- renderPlot({
+    req(cwdata$data$firstPlot)
+    if(all(is.na(cwdata$data$facet))) {
+      ggplot(data.frame(y = cwdata$data$x)) + 
+        geom_boxplot(aes(x = 1, y = y)) + 
+        coord_flip() + 
+        labs(y = cwdata$data$name, x = " ") 
+    } else {
+      ggplot(data.frame(y = cwdata$data$x, facet = cwdata$data$facet)) + 
+        facet_wrap(~facet, ncol = 2)+ 
+        geom_boxplot(aes(x = 1, y = y)) + 
+        coord_flip() + 
+        labs(y = cwdata$data$name, x = " ") 
+    }
+  })
+  
+  
+  output$cartWheelHistogram <- renderPlot({
+    req(cwdata$data$firstPlot)
+    if(all(is.na(cwdata$data$facet))) {
+      ggplot(data.frame(y = cwdata$data$x)) + 
+        geom_histogram(aes(y), bins = input$cartWheelHistBinsNum) + 
+        labs(x = cwdata$data$name, y = " ")
+    } else {
+      ggplot(data.frame(y = cwdata$data$x, facet = cwdata$data$facet)) +
+        facet_wrap(~facet, ncol = 2) + 
+        geom_histogram(aes(y), bins = input$cartWheelHistBinsNum) + 
+        labs(x = cwdata$data$name, y = " ")
+    }
   })
 })

@@ -157,7 +157,7 @@ shinyUI(
         fluidRow(
           column(
             10,
-            withMathJax(htmlOutput("prompt"))
+            withMathJax(htmlOutput("bivarprompt"))
           )
         ),
         ######################### Main Panel of Bivariate Plot #########################
@@ -177,8 +177,63 @@ shinyUI(
         )
       ),
       # End of Bivariate Tab
-      tabPanel("Interactive Histogram",
-               titlePanel("Interactive Histogram"))
-    ) # End of tabset Panel
-  )
-) # End of fluid page and UI)
+      ################################################################################
+      #                                                                              #
+      #                              Cartwheel Dataset                               #
+      #                                                                              #
+      ################################################################################
+      tabPanel(
+        "Cartwheel Visualization",
+        titlePanel("Interactive Histogram"),
+        sidebarLayout(
+          sidebarPanel(
+            h4("Some text"),
+            selectInput(
+              "cartWheelPlotVar",
+              "Which Variable would you like to plot?",
+              choices = c(
+                "Age",
+                "Height",
+                "Wingspan",
+                "CWDistance",
+                "Score"
+              ),
+              selected = "Height"
+            ),
+            selectInput(
+              "cartWheelFacet",
+              "What Variable Would you like to Facet by?",
+              choices = c(
+                "None",
+                "Gender",
+                "Glasses",
+                "Complete"
+              ),
+              selected = "None"
+            ),
+            sliderInput(
+              "cartWheelHistBinsNum",
+              "Number of Bins",
+              min = 3, 
+              max = 30,
+              step = 1, 
+              value = 20
+            ),
+            actionButton(
+              "cartWheelUpdate",
+              "Plot Data"
+            )
+          ),
+          mainPanel(
+            tags$h4("Summaries"),
+            withMathJax(htmlOutput("cartWheelPromptFirst")),
+            tags$h4("Boxplot"),
+            plotOutput("cartWheelBoxPlot", height = 200),
+            tags$h4("Histogram"),
+            plotOutput("cartWheelHistogram", height = 200)
+          )
+        ) # End of the Cartwheel Visualization      
+      ) # End of tabset Panel
+    ) # End of the nav bar page
+  ) # End of fluid page and UI)
+)
