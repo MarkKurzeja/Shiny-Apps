@@ -34,7 +34,7 @@ library(mvtnorm)
 shinyServer(function(input, output) {
   ###############################################################################
   #                                                                              #
-  #                            Bivariate Visualation                             #
+  #                            Bivariate Visualisation                           #
   #                                                                              #
   ################################################################################
   mdat <- reactiveValues()

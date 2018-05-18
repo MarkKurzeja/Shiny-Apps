@@ -184,13 +184,12 @@ shinyUI(
       ################################################################################
       tabPanel(
         "Cartwheel Visualization",
-        titlePanel("Interactive Histogram"),
+        titlePanel("Cartwheel Data"),
         sidebarLayout(
           sidebarPanel(
-            h4("Some text"),
             selectInput(
               "cartWheelPlotVar",
-              "Which Variable would you like to plot?",
+              "Which variable would you like to plot?",
               choices = c(
                 "Age",
                 "Height",
@@ -202,7 +201,7 @@ shinyUI(
             ),
             selectInput(
               "cartWheelFacet",
-              "What Variable Would you like to Facet by?",
+              "Which variable would you like to facet by?",
               choices = c(
                 "None",
                 "Gender",
