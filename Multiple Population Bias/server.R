@@ -83,9 +83,11 @@ shinyServer(function(input, output) {
     
     ############################### Plot the Samples ###############################
     p2 <- ggplot(data = data.frame(x = meandist, y = 0)) +
-      geom_density(aes(x = x, y = ..density.., color = "Sampling Distribution"), linetype = 1) +
+      # geom_density(aes(x = x, y = ..density.., color = "Sampling Distribution"), linetype = 1) +
+      stat_density(aes(x = x,  color = "Sampling Distribution"), geom = "line", linetype = 1) +
       geom_point(aes(x = x, y = y), color = color_in) + 
       scale_x_continuous(limits = c(140,200)) +
+      scale_linetype_manual(values = c("solid")) + 
       geom_vline(xintercept = mean(meandist)) +
       geom_vline(xintercept = mean(pop), color = "blue") + 
       labs(x = "Weight") +
