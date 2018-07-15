@@ -31,7 +31,7 @@ library(mvtnorm)
 ################################################################################
 
 # Define server logic required to draw a histogram
-shinyServer(function(input, output) {
+shinyServer(function(session, input, output) {
   ###############################################################################
   #                                                                              #
   #                            Bivariate Visualisation                           #
@@ -341,9 +341,37 @@ shinyServer(function(input, output) {
   ################################################################################
   
   cwdata <- reactiveValues()
+  cwsessionData <- reactiveValues(values = list(LOADED_DATA <- FALSE))
+  
+  observeEvent(input$uploadSummaryData, {
+    req(input$file2)
+    cwdata$data$data = read.csv(input$file2$datapath,
+                                header = T,
+                                sep = ",")
+    
+    # Update the UI to reflect the updates to the file that we are working with
+    updateSelectInput(session, 
+                      inputId = "cartWheelPlotVar",
+                      choices = colnames(cwdata$data$data),
+                      selected = colnames(cwdata$data$data)[1]
+    )
+    updateSelectInput(session, 
+                      inputId = "cartWheelFacet",
+                      choices = c("None", colnames(cwdata$data$data)),
+                      selected = "None"
+    )
+    
+    
+    cwsessionData$values$LOADED_DATA <- TRUE
+  })
+  
+  
   
   observeEvent(input$cartWheelUpdate, {
-    cwdata$data$data = read.csv("./Cartwheeldata.csv")
+    req(cwsessionData$values$LOADED_DATA)
+
+    # Return back to updating the code
+    
     cwdata$data$x = cwdata$data$data[[input$cartWheelPlotVar]]
     cwdata$data$name = input$cartWheelPlotVar
     cwdata$data$min = cwdata$data$x %>% pretty() %>% min %>% {. * 1}

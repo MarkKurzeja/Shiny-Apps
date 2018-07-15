@@ -183,30 +183,35 @@ shinyUI(
       #                                                                              #
       ################################################################################
       tabPanel(
-        "Cartwheel Visualization",
-        titlePanel("Cartwheel Data"),
+        "Data Visualization",
+        titlePanel("Data Visualization"),
         sidebarLayout(
           sidebarPanel(
+            fileInput(
+              "file2",
+              label = NULL,
+              multiple = FALSE,
+              accept = c("text/csv",
+                         "text/comma-separated-values,text/plain",
+                         ".csv")
+            ),
+            actionButton(
+              "uploadSummaryData",
+              "Upload Data"
+            ),
             selectInput(
               "cartWheelPlotVar",
               "Which variable would you like to plot?",
               choices = c(
-                "Age",
-                "Height",
-                "Wingspan",
-                "CWDistance",
-                "Score"
+                ""
               ),
-              selected = "Height"
+              selected = ""
             ),
             selectInput(
               "cartWheelFacet",
               "Which variable would you like to facet by?",
               choices = c(
-                "None",
-                "Gender",
-                "Glasses",
-                "Complete"
+                "None"
               ),
               selected = "None"
             ),
