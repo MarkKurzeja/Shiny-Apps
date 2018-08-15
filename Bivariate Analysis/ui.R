@@ -22,6 +22,8 @@ library(ggplot2)
 library(magrittr)
 library(dplyr)
 library(sjPlot)
+library(tidyr)
+library(stargazer)
 
 ################################################################################
 #                                                                              #
@@ -229,7 +231,7 @@ shinyUI(
             ),
             actionButton(
               "cartWheelUpdate",
-              "Plot Data"
+              "Update Plots"
             )
           ),
           mainPanel(
