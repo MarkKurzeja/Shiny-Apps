@@ -281,8 +281,9 @@ shinyServer(function(session, input, output) {
     base <- ggplot(mdat$keep, aes(x)) + geom_histogram() +
       scale_x_continuous(limits = c(plotlimits()$xmin, plotlimits()$xmax)) +
       scale_y_continuous(
-        labels = function(x)
+        labels = function(x) {
           sprintf("%.0f", x)
+        }
       ) +
       labs(x = mdat$x_lab_name, y = "Counts")
     if ("Display Mean" %in% input$dispOptions) {
@@ -343,35 +344,56 @@ shinyServer(function(session, input, output) {
   cwdata <- reactiveValues()
   cwsessionData <- reactiveValues(values = list(LOADED_DATA <- FALSE))
   
+  # Function for updating the UI that happens in both the default case and in the 
+  # user-data case
+  UpdateUserInterfaceChoices <- function() {
+    updateSelectInput(session, 
+                      inputId = "cartWheelPlotVar",
+                      choices = colnames(cwdata$data$data),
+                      selected = colnames(cwdata$data$data)[1]
+    )
+    
+    # For the faceting variables, we need to ensure that the number of categories
+    # is less than some bound or else this could blow up in the number of unique options
+    # by default, anything with more than four categories will not be included
+    facetingColnames = apply(X = cwdata$data$data, 
+                             MARGIN = 2, 
+                             FUN = function(x) {
+                               length(unique(x))
+                             }) %>% {.[. <= 4]} %>% names()
+    # Update the faceting variables
+    updateSelectInput(session, 
+                      inputId = "cartWheelFacet",
+                      choices = c("None", facetingColnames),
+                      selected = "None"
+    )
+  }
+  
   observeEvent(input$uploadSummaryData, {
     req(input$file2)
     cwdata$data$data = read.csv(input$file2$datapath,
                                 header = T,
                                 sep = ",")
     
-    # Update the UI to reflect the updates to the file that we are working with
-    updateSelectInput(session, 
-                      inputId = "cartWheelPlotVar",
-                      choices = colnames(cwdata$data$data),
-                      selected = colnames(cwdata$data$data)[1]
-    )
-    updateSelectInput(session, 
-                      inputId = "cartWheelFacet",
-                      choices = c("None", colnames(cwdata$data$data)),
-                      selected = "None"
-    )
-    
+    # Update the UI with the new variable names
+    UpdateUserInterfaceChoices()
     
     cwsessionData$values$LOADED_DATA <- TRUE
   })
   
-  
+  observeEvent(input$uploadDefaultData, {
+    cwdata$data$data = mtcars
+    
+    # Update the UI with the new variable names
+    UpdateUserInterfaceChoices()
+    
+    cwsessionData$values$LOADED_DATA <- TRUE
+  })
   
   observeEvent(input$cartWheelUpdate, {
     req(cwsessionData$values$LOADED_DATA)
-
-    # Return back to updating the code
     
+    # Return back to updating the reactiveValues
     cwdata$data$x = cwdata$data$data[[input$cartWheelPlotVar]]
     cwdata$data$name = input$cartWheelPlotVar
     cwdata$data$min = cwdata$data$x %>% pretty() %>% min %>% {. * 1}
@@ -384,33 +406,66 @@ shinyServer(function(session, input, output) {
     cwdata$data$firstPlot = TRUE
   })
   
+  # This is the description render that outputs to the user the
+  # text that gives the description - now handles faceting
   output$cartWheelPromptFirst <- renderText({
     req(cwdata$data$firstPlot)
-    d <- cwdata$data$x
-    # browser()
-    sprintf(
-      "&emsp;<strong>Min</strong>: %.2f<br>
-      &emsp;<strong>Q1</strong>: %.2f<br>
-      &emsp;<strong>Median</strong>: %.2f<br>
-      &emsp;<strong>Mean</strong>: %.2f<br>
-      &emsp;<strong>Q3</strong>: %.2f<br>
-      &emsp;<strong>Max</strong>: %.2f<br>
-      &emsp;<strong>Standard Deviation</strong>: %.2f<br>
-      &emsp;<strong>IQR</strong>: %.2f<br>
-      &emsp;<strong>n</strong>: %i<br>
-      <script>MathJax.Hub.Queue([\"Typeset\", MathJax.Hub]);</script>",
-      min(d),
-      quantile(d, probs = 0.25),
-      quantile(d, probs = 0.50),
-      mean(d),
-      quantile(d, probs = 0.75),
-      max(d),
-      sd(d),
-      quantile(d, probs = 0.75) - quantile(d, probs = 0.25),
-      length(d)
-      ) 
+    
+    # alias long variable names
+    var_name = input$cartWheelPlotVar
+    facet_name = input$cartWheelFacet
+    
+    # Do some data-ninja to handle faceting 
+    temp_text <- cwdata$data$data 
+    if (facet_name != "None") {
+      temp_text %<>% group_by_(facet_name)
+    }
+    temp_text %<>% 
+      summarize_(
+        Min = sprintf("min(%s)", var_name),
+        Q1 = sprintf("quantile(%s, prob = 0.25)", var_name),
+        Mean = sprintf("round(mean(%s),2)", var_name),
+        Median = sprintf("median(%s)", var_name),
+        Q3 = sprintf("quantile(%s, prob = 0.75)", var_name),
+        Max = sprintf("max(%s)", var_name),
+        n = sprintf("n()", var_name),
+        SD = sprintf("round(sd(%s),3)", var_name)
+      )
+    if(facet_name != "None") {
+      temp_text %<>% gather("key", "value", -facet_name) %>% # gather to long
+        tidyr::spread(facet_name, value) %>% # spread the table
+        .[c(4, 6, 2, 3, 7, 1, 5, 8), ] %>% # order the rows
+        dplyr::rename(" " = key)
+    } else {
+      temp_text %<>% gather("key", "value") 
+      colnames(temp_text) <- c(" ", var_name)
+    }
+    
+    # Push through stargazer as a html format for 
+    # dataframe
+    temp_text %<>% stargazer::stargazer(
+      summary = F, rownames = F, type = "html")
+    
+    # Include spacing constraints in Custom CSS
+    temp_text <- paste("<style>
+                       
+                       table, td, th {
+                       border: none;
+                       padding-left: 1em;
+                       padding-right: 1em;
+                       min-width: 50%;
+                       margin-left: auto;
+                       margin-right: auto;
+                       margin-top: 1em;
+                       margin-bottom: 1em;
+                       }
+                       
+                       </style>", temp_text)
+    
+    return(temp_text)
   })  
   
+  # The box plot
   output$cartWheelBoxPlot <- renderPlot({
     req(cwdata$data$firstPlot)
     if(all(is.na(cwdata$data$facet))) {
@@ -420,14 +475,14 @@ shinyServer(function(session, input, output) {
         labs(y = cwdata$data$name, x = " ") 
     } else {
       ggplot(data.frame(y = cwdata$data$x, facet = cwdata$data$facet)) + 
-        facet_wrap(~facet, ncol = 2)+ 
+        facet_wrap(~facet, ncol = 1)+ 
         geom_boxplot(aes(x = 1, y = y)) + 
         coord_flip() + 
         labs(y = cwdata$data$name, x = " ") 
     }
   })
   
-  
+  # The histogram
   output$cartWheelHistogram <- renderPlot({
     req(cwdata$data$firstPlot)
     if(all(is.na(cwdata$data$facet))) {
@@ -436,7 +491,7 @@ shinyServer(function(session, input, output) {
         labs(x = cwdata$data$name, y = " ")
     } else {
       ggplot(data.frame(y = cwdata$data$x, facet = cwdata$data$facet)) +
-        facet_wrap(~facet, ncol = 2) + 
+        facet_wrap(~facet, ncol = 1) + 
         geom_histogram(aes(y), bins = input$cartWheelHistBinsNum) + 
         labs(x = cwdata$data$name, y = " ")
     }

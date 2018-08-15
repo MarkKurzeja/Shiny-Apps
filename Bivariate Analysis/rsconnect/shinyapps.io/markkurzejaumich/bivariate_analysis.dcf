@@ -5,9 +5,9 @@ account: markkurzejaumich
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 350831
-bundleId: 1481280
+bundleId: 1505445
 url: https://markkurzejaumich.shinyapps.io/bivariate_analysis/
-when: 1531668128.05185
+when: 1532827075.2513
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: Cartwheeldata.csv|iris_1.csv|iris_2.csv|syst vs age.csv|sdf/app.R
+ignoredFiles: Cartwheeldata.csv|iris_1.csv|iris_2.csv|syst vs age.csv

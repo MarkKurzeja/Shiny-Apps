@@ -33,7 +33,7 @@ library(sjPlot)
 shinyUI(
   fluidPage(
     navbarPage(
-      "Cousera Apps",
+      "Coursera Apps",
       ################################################################################
       #                                                                              #
       #                              Bivariate Plot Tab                              #
@@ -179,7 +179,7 @@ shinyUI(
       # End of Bivariate Tab
       ################################################################################
       #                                                                              #
-      #                              Cartwheel Dataset                               #
+      #                                Demo Dataset                                  #
       #                                                                              #
       ################################################################################
       tabPanel(
@@ -197,7 +197,11 @@ shinyUI(
             ),
             actionButton(
               "uploadSummaryData",
-              "Upload Data"
+              "Upload User Data"
+            ),
+            actionButton(
+              "uploadDefaultData",
+              "Use Default Dataset"
             ),
             selectInput(
               "cartWheelPlotVar",
