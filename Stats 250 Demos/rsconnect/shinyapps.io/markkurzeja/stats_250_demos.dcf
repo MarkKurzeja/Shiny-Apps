@@ -1,0 +1,12 @@
+name: stats_250_demos
+title: Stats_250_Demos
+username:
+account: markkurzeja
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 528645
+bundleId: 1656189
+url: https://markkurzeja.shinyapps.io/stats_250_demos/
+when: 1540228828.25095
+asMultiple: FALSE
+asStatic: FALSE

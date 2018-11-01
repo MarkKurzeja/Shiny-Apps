@@ -37,7 +37,7 @@ shinyUI(fluidPage(
     #                                                                              #
     ################################################################################
     tabPanel(
-      "Binominal Approximation",
+      "Binomial Approximation",
       # Application title
       titlePanel("Normal Approximation to the Binomial Distribution"),
       tags$h5(textOutput("instructions")),
@@ -45,9 +45,7 @@ shinyUI(fluidPage(
       sidebarLayout(
         sidebarPanel(
           radioButtons("n", "Number of Trials", choices = c(5,10,20,50,100), inline = T, selected = 50),
-          sliderInput("p", "Success Percentage", min = 5, max = 95, step = 5, post = "%", value = 50),
-          selectInput("discrete", "Should the Approximation be Discrete",
-                      choices = c(TRUE, FALSE), selected = TRUE)
+          sliderInput("p", "Success Percentage", min = 5, max = 95, step = 5, post = "%", value = 50)
         ),
         
         # Show a plot of the generated distribution

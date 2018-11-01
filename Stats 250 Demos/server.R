@@ -111,7 +111,6 @@ shinyServer(function(input, output) {
     ######################### Get the inputs from the user #########################
     n = as.numeric(input$n)
     p = input$p / 100
-    cont = ifelse(input$discrete == "TRUE", TRUE, FALSE)
     xmin = max(0, n * p - 4 * sqrt(n * p * (1 - p)))
     xmax = min(n, n * p + 4 * sqrt(n * p * (1 - p)))
     
@@ -127,12 +126,8 @@ shinyServer(function(input, output) {
       geom_segment(aes(x=x,xend=x,y=0,yend=binom)) +
       # ggtitle(sprintf("Normal Approximation vs Exact Binomial | N = %i | p = %.2f", n, p)) +
       scale_x_continuous(limits = c(xmin, xmax)) +
-      labs(y = "Density")
-    if (!cont) {
-      result = result + stat_function(fun = mydnorm, color = "red", size = 1.5)
-    } else {
-      result = result + geom_line(aes(x = x, y = normal), color = "red", size = 1.5)
-    }
+      labs(y = "Density") + 
+      stat_function(fun = mydnorm, color = "red", size = 1.5)
     result
   })
   
@@ -161,6 +156,8 @@ shinyServer(function(input, output) {
     plotalt <- T
     plotalpha <- T
     plotbeta <- T
+    plot_desc <- T # True if we are going to put in the type I and type II error labels
+    
     lower = 5
     upper = 20
     
@@ -182,6 +179,19 @@ shinyServer(function(input, output) {
     }
     if(plotalt) {
       baseplot <- baseplot + stat_function(fun = alt, n = 1000)
+    }
+    
+    if(plot_desc) {
+      # Plotting the Type I Error Label
+      baseplot <- baseplot + geom_label(
+        aes(x = x, y = y, label = label), color = "red", 
+        data = data.frame(x = decision + 1, y = 0.10, label = "Red Area = Type I Error")
+        )
+      # Plotting the Type II Error
+      baseplot <- baseplot + geom_label(
+        aes(x = x, y = y, label = label), color = "blue", 
+        data = data.frame(x = decision - 1, y = 0.10, label = "Blue Area = Type II Error")
+      )
     }
     
     result$plot <- baseplot + geom_vline(xintercept = decision) 
