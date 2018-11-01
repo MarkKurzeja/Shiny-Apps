@@ -8,6 +8,7 @@ library(splines)
 library(plyr)
 library(dplyr)
 library(RColorBrewer)
+library(latex2exp)
 
 color1 <- brewer.pal(n = 3, name = "Set1")[1]
 color2 <- brewer.pal(n = 3, name = "Set1")[2]
@@ -73,6 +74,7 @@ shinyServer(function(input, output) {
     meansplot <- ggplot(data.frame(x = m)) +
       geom_histogram(aes(x, y= ..density..), bins = 75) +
       scale_x_continuous(limits = c(0,10)) +
+      labs(x = TeX('$\\bar{x}$'))
       stat_function(fun = dnorm, 
                     args = list(mean = mean(s), 
                                 sd = sd(s) / sqrt(as.numeric(input$numSamp))),
@@ -111,8 +113,8 @@ shinyServer(function(input, output) {
     ######################### Get the inputs from the user #########################
     n = as.numeric(input$n)
     p = input$p / 100
-    xmin = max(0, n * p - 4 * sqrt(n * p * (1 - p)))
-    xmax = min(n, n * p + 4 * sqrt(n * p * (1 - p)))
+    xmin = qbinom(p = 0.0001, size = n, prob = p)
+    xmax = qbinom(p = 0.9999, size = n, prob = p)
     
     ############################## Build up the math ###############################
     x = 0:n
@@ -128,6 +130,12 @@ shinyServer(function(input, output) {
       scale_x_continuous(limits = c(xmin, xmax)) +
       labs(y = "Density") + 
       stat_function(fun = mydnorm, color = "red", size = 1.5)
+    
+    # Add in the label description - switch sides if too far to the right
+    result <- result + 
+      ggtitle(sprintf("Binom(%.0f, %.2f)", n, p)) + 
+      theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 12))
+  
     result
   })
   
@@ -245,9 +253,9 @@ shinyServer(function(input, output) {
     } else if(input$givendirection == "At least" & input$condDirection == "At most") {
       prob = max((input$condVal - input$givenVal) * 1/20, 0)
     } else if(input$givendirection == "At least" & input$condDirection == "At least") {
-      prob = (min(input$givenVal, input$condVal)) * 1/20
+      prob = min(1, (20 - input$condVal) / (20 - input$givenVal))
     } else if(input$givendirection == "At most" & input$condDirection == "At most") {
-      prob = (min(input$givenVal, input$condVal)) * 1/20
+      prob = min(1, input$condVal / input$givenVal)
     }
     return(prob)
   })
