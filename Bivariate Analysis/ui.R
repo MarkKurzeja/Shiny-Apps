@@ -214,8 +214,7 @@ shinyUI(
                         "defaultDataSelection",
                         label = NULL,
                         choices = c(
-                          "Wt | MPG",
-                          "Bivar. Normal"
+                          "HP | AM"
                         )
                       )
                     ),
@@ -244,9 +243,11 @@ shinyUI(
                         "file1",
                         label = NULL,
                         multiple = TRUE,
-                        accept = c("text/csv",
-                                   "text/comma-separated-values,text/plain",
-                                   ".csv")
+                        accept = c(
+                          "text/csv",
+                          "text/comma-separated-values,text/plain",
+                          ".csv"
+                        )
                       )
                     ),
                     column(
@@ -285,15 +286,6 @@ shinyUI(
                   ),
                   selected = "None"
                 )
-                # tags$h4("Correlation Slider"),
-                # sliderInput(
-                #   "corrSlider",
-                #   label = NULL,
-                #   min = -1, 
-                #   max = 1, 
-                #   value = 0, 
-                #   step = 0.10
-                # )
               )
             )
           )
