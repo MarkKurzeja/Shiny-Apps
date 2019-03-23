@@ -193,7 +193,7 @@ shinyServer(function(input, output) {
       # Plotting the Type I Error Label
       baseplot <- baseplot + geom_label(
         aes(x = x, y = y, label = label), color = "red", 
-        data = data.frame(x = decision + 1, y = 0.10, label = "Red Area = Type I Error")
+        data = data.frame(x = decision + 1, y = 0.15, label = "Red Area = Type I Error")
         )
       # Plotting the Type II Error
       baseplot <- baseplot + geom_label(

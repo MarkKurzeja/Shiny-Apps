@@ -5,8 +5,8 @@ account: markkurzeja
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 528645
-bundleId: 1675979
+bundleId: 1896774
 url: https://markkurzeja.shinyapps.io/stats_250_demos/
-when: 1541050539.09099
+when: 1551049981.34664
 asMultiple: FALSE
 asStatic: FALSE

@@ -19,7 +19,7 @@ shinyUI(fluidPage(
       sidebarLayout(
         sidebarPanel(
           selectInput("distr", "Choose the Distribution to Sample from", c("Normal", "Uniform", "Skewed", "Dragon"), "Uniform"),
-          radioButtons("numSamp", "Number of Samples to Average", c(10,25, 100, 200))
+          radioButtons("numSamp", "Size of the Samples to be taken and Averaged Over", c(10,25, 100, 200))
         ),
         
         # Show a plot of the generated distribution
